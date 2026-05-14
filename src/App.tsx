@@ -463,7 +463,7 @@ export default function App() {
                   <div 
                     ref={scrollRef}
                     onScroll={handleScroll}
-                    className="flex-1 overflow-x-hidden overflow-y-auto space-y-6 pb-40 pt-4 px-4 md:px-8 touch-pan-y overscroll-contain scroll-smooth"
+                    className="flex-1 overflow-x-hidden overflow-y-auto space-y-6 pb-10 pt-4 px-4 md:px-8 touch-pan-y overscroll-contain scroll-smooth"
                     id="message-log"
                   >
                     {messages.length === 0 && (
@@ -495,7 +495,7 @@ export default function App() {
                                <span className="text-xs font-medium truncate">{msg.fileName}</span>
                             </div>
                           )}
-                          <div className="prose prose-invert prose-p:leading-relaxed prose-sm max-w-none overflow-x-auto overflow-y-hidden scrollbar-thin">
+                          <div className="prose prose-invert prose-p:leading-relaxed prose-sm max-w-none overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-cyan-500/20">
                             <ReactMarkdown
                               components={{
                                 code({ node, inline, className, children, ...props }: any) {
@@ -579,11 +579,11 @@ export default function App() {
 
         {/* Input Bar Area */}
         <div className={cn(
-          "fixed bottom-0 left-0 right-0 md:left-64 p-3 sm:p-4 md:p-8 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent z-30 transition-all duration-300",
+          "relative w-full bg-[#0a0a0f] border-t border-gray-800/50 p-2 sm:p-4 md:p-8 z-30",
           appMode === 'voice' && !messages.length ? "hidden" : "block"
         )}>
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-wrap gap-2 mb-2 px-2">
+          <div className="max-w-4xl mx-auto px-1 sm:px-0">
+            <div className="flex flex-wrap gap-2 mb-2 px-1">
               {attachedImage && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
@@ -617,12 +617,12 @@ export default function App() {
               )}
             </div>
             
-            <form onSubmit={handleSendMessage} className="relative flex items-center gap-2 bg-[#1a1a25]/90 backdrop-blur-xl rounded-[2rem] p-2 pl-4 border border-gray-700/50 hover:border-cyan-500/50 focus-within:border-cyan-500/80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all group/form mb-4">
-              <div className="flex items-center">
+            <form onSubmit={handleSendMessage} className="relative flex items-center gap-1.5 sm:gap-2 bg-[#1a1a25]/90 backdrop-blur-xl rounded-[2rem] p-1.5 pl-3 sm:p-2 sm:pl-4 border border-gray-700/50 hover:border-cyan-500/50 focus-within:border-cyan-500/80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all group/form mb-2 sm:mb-4">
+              <div className="flex items-center gap-1">
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2.5 text-gray-400 hover:text-cyan-400 transition-all hover:scale-110 active:scale-95"
+                  className="p-2 text-gray-400 hover:text-cyan-400 transition-all hover:scale-110 active:scale-95 hidden sm:flex"
                   title="Upload Image"
                 >
                   <Camera className="w-5 h-5" />
@@ -630,10 +630,10 @@ export default function App() {
                 <button 
                   type="button" 
                   onClick={() => genericFileInputRef.current?.click()}
-                  className="p-2.5 text-gray-400 hover:text-amber-400 transition-all hover:scale-110 active:scale-95"
+                  className="p-2 text-gray-400 hover:text-amber-400 transition-all hover:scale-110 active:scale-95 flex"
                   title="Upload File"
                 >
-                  <Upload className="w-5 h-5" />
+                  <Upload className="w-5 h-4 sm:h-5" />
                 </button>
               </div>
               <input 
@@ -654,32 +654,32 @@ export default function App() {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder={isListening ? "Listening..." : "Ask me anything or paste a link..."}
-                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-white text-[16px] placeholder-gray-500 py-3"
+                placeholder={isListening ? "Listening..." : "Ask me..."}
+                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-white text-[16px] placeholder-gray-500 py-2 sm:py-3 px-1"
               />
               
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 pr-1">
                 <button 
                   type="button"
                   onClick={isListening ? stopListening : startListening}
                   className={cn(
-                    "p-2.5 rounded-full transition-all flex-shrink-0",
+                    "p-2 sm:p-2.5 rounded-full transition-all flex-shrink-0",
                     isListening ? "bg-red-500 text-white animate-pulse" : "bg-gray-800/50 text-gray-400 hover:text-white"
                   )}
                 >
-                  <Mic className="w-5 h-5 sm:w-6 h-6" />
+                  <Mic className="w-5 h-5" />
                 </button>
                 <button 
                   type="submit"
                   disabled={!inputText.trim() && !attachedImage && !attachedFile}
                   className={cn(
-                    "p-2.5 rounded-full transition-all flex-shrink-0 shadow-lg border",
+                    "p-2 sm:p-2.5 rounded-full transition-all flex-shrink-0 shadow-lg border",
                     !inputText.trim() && !attachedImage && !attachedFile 
                       ? "bg-gray-800/50 border-gray-700/50 text-gray-500 cursor-not-allowed opacity-50 shadow-none" 
                       : "bg-gradient-to-tr from-cyan-600 to-blue-500 border-cyan-400/50 text-white hover:brightness-110 hover:scale-110 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)]"
                   )}
                 >
-                  <Send className="w-5 h-5 sm:w-6 h-6" />
+                  <Send className="w-5 h-5" />
                 </button>
               </div>
             </form>

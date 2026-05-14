@@ -39,11 +39,11 @@
 }
 
 .markdown-body code {
-  @apply px-1.5 py-0.5 rounded bg-gray-800/50 text-cyan-400 font-mono text-[13px];
+  @apply px-1.5 py-0.5 rounded bg-gray-800/50 text-cyan-400 font-mono text-[13px] break-all sm:break-normal;
 }
 
 .markdown-body table {
-  @apply w-full mb-4 border-collapse overflow-x-auto block scrollbar-thin scrollbar-thumb-cyan-500/20;
+  @apply w-full mb-4 border-collapse overflow-x-auto block scrollbar-thin scrollbar-thumb-cyan-500/20 whitespace-nowrap;
 }
 
 .markdown-body th, .markdown-body td {
