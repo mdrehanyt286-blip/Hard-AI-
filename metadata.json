@@ -1,0 +1,16 @@
+{
+  "name": "REHAN AI - Unfiltered Expert",
+  "description": "Ultra-advanced AI with coding, link analysis, and unfiltered hacker personas. Supports voice, image, and file analysis.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "voice_to_voice",
+    "multilingual",
+    "news_engine",
+    "image_analysis",
+    "file_analysis",
+    "link_extraction"
+  ]
+}
