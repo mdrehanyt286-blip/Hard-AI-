@@ -61,7 +61,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ language, value }) => {
               fontFamily: 'inherit',
             }
           }}
-          wrapLongLines={true}
+          wrapLongLines={false}
         >
           {value}
         </SyntaxHighlighter>

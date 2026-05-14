@@ -46,6 +46,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [atBottom, setAtBottom] = useState(true);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(SUPPORTED_LANGUAGES[1]); // English default
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('female');
   const [appMode, setAppMode] = useState<AppMode>('both');
@@ -141,10 +142,20 @@ export default function App() {
 
   const lastMessageCount = useRef(messages.length);
   useEffect(() => {
-    // Only auto-scroll if a new message is added AND we are already at the bottom
+    // Only auto-scroll if a new message is added
     if (messages.length > lastMessageCount.current) {
-      if (atBottom || messages[messages.length - 1].role === 'user') {
-        setTimeout(() => scrollToBottom(), 100);
+      const lastMessage = messages[messages.length - 1];
+      
+      // If we are at the bottom OR it's a user message, scroll automatically
+      // We use a slightly more generous check for "at bottom" here
+      if (atBottom || lastMessage.role === 'user') {
+        setTimeout(() => {
+          scrollToBottom();
+          setHasUnreadMessages(false);
+        }, 100);
+      } else {
+        // If user is scrolled up, show unread indicator
+        setHasUnreadMessages(true);
       }
       lastMessageCount.current = messages.length;
     }
@@ -152,10 +163,12 @@ export default function App() {
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
-    // Increased tolerance for detecting "at bottom" to work better on high-DPI mobile screens
-    const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 100;
-    if (isAtBottom !== atBottom) {
-      setAtBottom(isAtBottom);
+    // Tolerance for detecting "at bottom"
+    const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 150;
+    
+    setAtBottom(isAtBottom);
+    if (isAtBottom) {
+      setHasUnreadMessages(false);
     }
   };
 
@@ -219,7 +232,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-[#0a0a0f] text-gray-100 overflow-hidden font-sans" id="app-root">
+    <div className="flex h-[100dvh] bg-[#0a0a0f] text-gray-100 overflow-hidden font-sans selection:bg-cyan-500/30" id="app-root">
       {/* Sidebar - Desktop & Mobile */}
       <div className={cn(
         "fixed inset-y-0 left-0 z-40 w-64 bg-[#0f0f18] border-r border-gray-800 flex-col transition-transform duration-300 md:relative md:translate-x-0 md:flex",
@@ -371,7 +384,7 @@ export default function App() {
 
         {/* View Mode: Voice vs Chat */}
         <div className={cn(
-          "flex-1 flex flex-col items-center p-2 sm:p-12 transition-all w-full min-h-0 overflow-hidden",
+          "flex-1 flex flex-col items-center transition-all w-full min-h-0 overflow-hidden",
           appMode === 'voice' && !messages.length ? "justify-center" : "justify-start"
         )}>
           <AnimatePresence mode="wait">
@@ -450,7 +463,7 @@ export default function App() {
                   <div 
                     ref={scrollRef}
                     onScroll={handleScroll}
-                    className="flex-1 overflow-y-auto space-y-6 pb-40 px-2 touch-pan-y overscroll-contain"
+                    className="flex-1 overflow-x-hidden overflow-y-auto space-y-6 pb-40 pt-4 px-4 md:px-8 touch-pan-y overscroll-contain scroll-smooth"
                     id="message-log"
                   >
                     {messages.length === 0 && (
@@ -466,7 +479,7 @@ export default function App() {
                         initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className={cn(
-                          "flex gap-4 p-5 rounded-2xl max-w-[85%] shadow-lg transition-all",
+                          "flex gap-4 p-5 rounded-2xl max-w-[95%] sm:max-w-[85%] shadow-lg transition-all",
                           msg.role === 'user' 
                             ? "ml-auto bg-gradient-to-br from-cyan-600/20 to-cyan-800/10 border border-cyan-500/30 backdrop-blur-sm self-end" 
                             : "mr-auto bg-gradient-to-br from-gray-800/60 to-gray-900/40 border border-gray-700/50 backdrop-blur-sm self-start"
@@ -482,7 +495,7 @@ export default function App() {
                                <span className="text-xs font-medium truncate">{msg.fileName}</span>
                             </div>
                           )}
-                          <div className="prose prose-invert prose-p:leading-relaxed prose-sm max-w-none overflow-hidden">
+                          <div className="prose prose-invert prose-p:leading-relaxed prose-sm max-w-none overflow-x-auto overflow-y-hidden scrollbar-thin">
                             <ReactMarkdown
                               components={{
                                 code({ node, inline, className, children, ...props }: any) {
@@ -528,15 +541,33 @@ export default function App() {
                   
                   {/* Scroll to Bottom Button */}
                   <AnimatePresence>
-                    {!atBottom && messages.length > 0 && (
+                    {(!atBottom || hasUnreadMessages) && messages.length > 0 && (
                       <motion.button
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        onClick={() => scrollToBottom()}
-                        className="absolute bottom-32 left-1/2 -translate-x-1/2 p-2 bg-cyan-600/80 backdrop-blur-md text-white rounded-full shadow-lg z-20 hover:bg-cyan-500"
+                        initial={{ opacity: 0, y: 10, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, scale: 0.8, x: '-50%' }}
+                        onClick={() => {
+                          scrollToBottom();
+                          setHasUnreadMessages(false);
+                        }}
+                        className="absolute bottom-4 left-1/2 p-2 bg-cyan-600/80 backdrop-blur-md text-white rounded-full shadow-lg z-20 hover:bg-cyan-500 group"
                       >
                          <ChevronRight className="w-5 h-5 rotate-90" />
+                         {hasUnreadMessages && (
+                           <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border border-white/20 shadow-sm"></span>
+                           </span>
+                         )}
+                         {hasUnreadMessages && (
+                           <motion.span 
+                             initial={{ opacity: 0, y: 5 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-800 text-[10px] text-white px-2 py-1 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity"
+                           >
+                             New message
+                           </motion.span>
+                         )}
                       </motion.button>
                     )}
                   </AnimatePresence>
@@ -546,9 +577,9 @@ export default function App() {
           </AnimatePresence>
         </div>
 
-        {/* Input Bar */}
+        {/* Input Bar Area */}
         <div className={cn(
-          "absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f] to-transparent z-10",
+          "fixed bottom-0 left-0 right-0 md:left-64 p-3 sm:p-4 md:p-8 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent z-30 transition-all duration-300",
           appMode === 'voice' && !messages.length ? "hidden" : "block"
         )}>
           <div className="max-w-4xl mx-auto">
@@ -624,7 +655,7 @@ export default function App() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={isListening ? "Listening..." : "Ask me anything or paste a link..."}
-                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-white text-base placeholder-gray-500 py-3"
+                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-white text-[16px] placeholder-gray-500 py-3"
               />
               
               <div className="flex items-center gap-1 shrink-0">
@@ -644,8 +675,8 @@ export default function App() {
                   className={cn(
                     "p-2.5 rounded-full transition-all flex-shrink-0 shadow-lg border",
                     !inputText.trim() && !attachedImage && !attachedFile 
-                      ? "bg-gray-800/80 border-gray-700 text-gray-500 cursor-not-allowed" 
-                      : "bg-gradient-to-tr from-cyan-600 to-blue-500 border-cyan-400/50 text-white hover:brightness-110 hover:scale-110 active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                      ? "bg-gray-800/50 border-gray-700/50 text-gray-500 cursor-not-allowed opacity-50 shadow-none" 
+                      : "bg-gradient-to-tr from-cyan-600 to-blue-500 border-cyan-400/50 text-white hover:brightness-110 hover:scale-110 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)]"
                   )}
                 >
                   <Send className="w-5 h-5 sm:w-6 h-6" />
