@@ -69,6 +69,11 @@ export default function App() {
     localStorage.setItem('gemini_api_key', apiKey);
   }, [apiKey]);
 
+  const appStatus = {
+    hasKey: !!apiKey || !!process.env.GEMINI_API_KEY,
+    mode: unfilteredMode ? 'Hacker' : codingMode ? 'Coder' : 'Standard'
+  };
+
   const handleAIResponse = useCallback(async (text: string, image?: { data: string; mimeType: string }, file?: { name: string; content: string }) => {
     setIsProcessing(true);
     
@@ -315,7 +320,7 @@ export default function App() {
                    <Key className="w-4 h-4" />
                    <span className="text-sm font-semibold">API Settings</span>
                 </div>
-                <div className={cn("w-2 h-2 rounded-full", apiKey ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]")} />
+                <div className={cn("w-2 h-2 rounded-full", appStatus.hasKey ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]")} />
               </button>
             </div>
           </section>
@@ -412,7 +417,7 @@ export default function App() {
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="w-full h-full max-w-4xl flex flex-col"
+                className="w-full flex-1 max-w-4xl flex flex-col min-h-0"
                 id="chat-view"
               >
                 {/* Chat Header Controls */}
@@ -579,7 +584,7 @@ export default function App() {
 
         {/* Input Bar Area */}
         <div className={cn(
-          "relative w-full bg-[#0a0a0f] border-t border-gray-800/50 p-2 sm:p-4 md:p-8 z-30",
+          "relative w-full bg-[#0a0a0f] border-t border-gray-800/50 p-2 sm:p-4 md:p-8 z-30 shrink-0",
           appMode === 'voice' && !messages.length ? "hidden" : "block"
         )}>
           <div className="max-w-4xl mx-auto px-1 sm:px-0">
@@ -617,12 +622,12 @@ export default function App() {
               )}
             </div>
             
-            <form onSubmit={handleSendMessage} className="relative flex items-center gap-1.5 sm:gap-2 bg-[#1a1a25]/90 backdrop-blur-xl rounded-[2rem] p-1.5 pl-3 sm:p-2 sm:pl-4 border border-gray-700/50 hover:border-cyan-500/50 focus-within:border-cyan-500/80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all group/form mb-2 sm:mb-4">
+            <form onSubmit={handleSendMessage} className="relative flex items-center gap-1.5 sm:gap-2 bg-[#1a1a25]/90 backdrop-blur-xl rounded-[2rem] p-1.5 pl-3 sm:p-2 sm:pl-4 border border-gray-700/50 hover:border-cyan-500/50 focus-within:border-cyan-500/80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all group/form mb-4 border-b-4 border-b-cyan-500/20">
               <div className="flex items-center gap-1">
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2 text-gray-400 hover:text-cyan-400 transition-all hover:scale-110 active:scale-95 hidden sm:flex"
+                  className="p-2 text-gray-400 hover:text-cyan-400 transition-all hover:scale-110 active:scale-95 flex"
                   title="Upload Image"
                 >
                   <Camera className="w-5 h-5" />
@@ -784,6 +789,16 @@ export default function App() {
                 </div>
 
                 <div className="pt-4 border-t border-gray-800 space-y-4">
+                  <div className="bg-gray-900/50 p-4 rounded-2xl border border-gray-800 space-y-2">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Environment Status</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Server API Key</span>
+                      <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold uppercase", process.env.GEMINI_API_KEY ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400")}>
+                        {process.env.GEMINI_API_KEY ? 'Detected' : 'Missing'}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="space-y-3">
                     <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                       <Key className="w-3 h-3" /> Gemini API Token
